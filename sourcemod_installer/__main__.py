@@ -115,6 +115,9 @@ if __name__ == "__main__":
 			default = "1.10")
 	parser.add_argument("--branch", help = "the SourceMod branch to install (resolves version)")
 	
+	parser.add_argument("--url", help = "a URL to a SourceMod package to install "
+			"(ignores version / os / branch)")
+	
 	args = parser.parse_args()
 	
 	params = {
@@ -134,6 +137,9 @@ if __name__ == "__main__":
 		url = f'https://sourcemod.net/latest.php?{urllib.parse.urlencode(params)}',
 		headers = { "User-Agent": "SourceMod Update Utility"}
 	)
+	
+	if args.url:
+		r.full_url = args.url
 	
 	tempname = None
 	with urllib.request.urlopen(r) as remote:
