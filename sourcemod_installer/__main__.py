@@ -18,7 +18,8 @@ import sys
 import functools
 
 LICENSE_PROMPT = """\
-SourceMod is licensed under GPLv3.  For more information, see https://www.sourcemod.net/license.php.
+SourceMod is licensed under GPLv3.  For more information, see https://www.sourcemod.net/license.php
+You must acknolwedge and comply with the license agreement to install and use SourceMod.
 Proceed with installation?"""
 
 def iter_dir_files(root_dir):
@@ -74,6 +75,7 @@ def get_version_from_branch(branch):
 		page = data.read().decode(data.headers.get_content_charset())
 		parser.feed(page)
 	
+	# find some downloadable file and return its directory name
 	for ref in filter(lambda l: '.zip' in l, parser.refs):
 		path = pathlib.PurePosixPath(ref)
 		return path.parent.name
@@ -85,11 +87,13 @@ def confirm(*args, **kwargs):
 	
 	Returns True / False if the user provided any input, None if not an interactive terminal or
 	if the input is invalid.
+	
+	Contains a 'default' kwarg that can be set to True to allow by default.
 	"""
 	import distutils.util
 	import itertools
 	
-	if sys.stdout.isatty():
+	if sys.stdin.isatty() and sys.stdout.isatty():
 		confirmation = '[Y/n]' if kwargs.pop("default", False) else '[y/N]'
 		prompt = ' '.join(itertools.chain(args, [ confirmation, '' ]))
 		try:
@@ -101,6 +105,7 @@ def confirm(*args, **kwargs):
 if __name__ == "__main__":
 	import platform
 	import argparse
+	import pydoc
 	
 	parser = argparse.ArgumentParser(description = "Installs or upgrades SourceMod.")
 	
@@ -158,6 +163,9 @@ if __name__ == "__main__":
 		if not (args.directory / path_sm).exists():
 			# first install, make sure that user acknowledges license
 			print("Performing full install of SourceMod.")
+			with open(package / path_sm / 'LICENSE.txt', 'rt') as license:
+				pydoc.pager(license.read())
+			print()
 			result = confirm(LICENSE_PROMPT)
 			
 			if result:
