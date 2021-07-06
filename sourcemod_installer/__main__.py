@@ -123,6 +123,9 @@ if __name__ == "__main__":
 	parser.add_argument("--url", help = "a URL to a SourceMod package to install "
 			"(ignores version / os / branch)")
 	
+	parser.add_argument("--archive", help = "an existing package to install "
+			"(ignores version / os / branch / url)", type = pathlib.Path)
+	
 	args = parser.parse_args()
 	
 	params = {
@@ -147,10 +150,17 @@ if __name__ == "__main__":
 		r.full_url = args.url
 	
 	tempname = None
-	with urllib.request.urlopen(r) as remote:
-		pkg = pathlib.Path(urllib.parse.urlsplit(remote.geturl()).path.split('/')[-1])
-		print('Installing SourceMod package', pkg)
-		with tempfile.NamedTemporaryFile(delete = False, suffix = ''.join(pkg.suffixes)) as local:
+	
+	if not args.archive or not args.archive.exists():
+		with urllib.request.urlopen(r) as remote:
+			pkg = pathlib.Path(urllib.parse.urlsplit(remote.geturl()).path.split('/')[-1])
+			print('Downloading SourceMod package', pkg)
+			with tempfile.NamedTemporaryFile(delete = False, suffix = ''.join(pkg.suffixes)) as local:
+				shutil.copyfileobj(remote, local)
+				tempname = local.name
+	else:
+		with tempfile.NamedTemporaryFile(delete = False, suffix = ''.join(args.archive.suffixes)) as local,\
+				open(args.archive, mode = 'rb') as remote:
 			shutil.copyfileobj(remote, local)
 			tempname = local.name
 	
