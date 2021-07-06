@@ -189,14 +189,17 @@ if __name__ == "__main__":
 		# replace the contents of `bin/` and `configs/geoip/`
 		for d in { ('bin',), ('configs', 'geoip') }:
 			sd = path_sm / pathlib.Path(*d)
-			shutil.rmtree(args.directory / sd)
-			shutil.copytree(package / sd, args.directory / sd, dirs_exist_ok = False)
+			if (args.directory / sd).exists():
+				shutil.rmtree(args.directory / sd)
+			if (package / sd).exists():
+				shutil.copytree(package / sd, args.directory / sd, dirs_exist_ok = False)
 		
 		# update the contents of `configs/sql-init-scripts/`, `extensions/`, `scripting/`,
 		# `translations` without touching other existing files
 		for d in { ('configs', 'sql-init-scripts'), ('extensions',), ('scripting',), ('translations',) }:
 			sd = path_sm / pathlib.Path(*d)
-			shutil.copytree(package / sd, args.directory / sd, dirs_exist_ok = True)
+			if (package / sd).exists():
+				shutil.copytree(package / sd, args.directory / sd, dirs_exist_ok = True)
 		
 		# iterate over extracted plugins and copy existing ones to root, else copy to disabled
 		for plugin in iter_dir_files(package / path_sm / 'plugins'):
