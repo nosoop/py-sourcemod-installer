@@ -22,16 +22,6 @@ SourceMod is licensed under GPLv3.  For more information, see https://www.source
 You must acknolwedge and comply with the license agreement to install and use SourceMod.
 Proceed with installation?"""
 
-def iter_dir_files(root_dir):
-	""" Generator that yields all files within a directory and subdirectories. """
-	if not root_dir.exists() or not root_dir.is_dir():
-		return
-	for p in root_dir.iterdir():
-		if p.is_dir():
-			yield from iter_dir_files(p)
-		elif p.is_file():
-			yield p
-
 @contextlib.contextmanager
 def deferred_file_remove(file, *args, **kwargs):
 	""" Opens a file for access, deleting it once the context is closed. """
@@ -216,7 +206,7 @@ if __name__ == "__main__":
 				shutil.copytree(package / sd, args.directory / sd, dirs_exist_ok = True)
 		
 		# iterate over extracted plugins and copy existing ones to root, else copy to disabled
-		for plugin in iter_dir_files(package / path_sm / 'plugins'):
+		for plugin in (package / path_sm / 'plugins').rglob("*.smx"):
 			if not (args.directory / path_sm / 'plugins' / plugin.name).exists():
 				shutil.copyfile(plugin, args.directory / path_sm / 'plugins' / 'disabled' / plugin.name)
 				print(plugin.name, 'disabled')
