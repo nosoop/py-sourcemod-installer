@@ -123,7 +123,8 @@ if __name__ == "__main__":
 	parser.add_argument("--url", help = "a URL to a SourceMod package to install "
 			"(ignores version / os / branch)")
 	
-	parser.add_argument("--archive", help = "an existing package to install "
+	parser.add_argument("--archive", help = "an existing package to install; "
+			"either compressed file or directory "
 			"(ignores version / os / branch / url)", type = pathlib.Path)
 	
 	args = parser.parse_args()
@@ -150,23 +151,36 @@ if __name__ == "__main__":
 		r.full_url = args.url
 	
 	tempname = None
+	package = None
 	
-	if not args.archive or not args.archive.exists():
+	if args.archive and args.archive.exists():
+		if args.archive.is_file():
+			# use local archive
+			with tempfile.NamedTemporaryFile(delete = False, suffix = ''.join(args.archive.suffixes)) as local,\
+					open(args.archive, mode = 'rb') as remote:
+				shutil.copyfileobj(remote, local)
+				tempname = local.name
+		elif args.archive.is_dir():
+			# use unpacked archive
+			package = args.archive
+	else:
+		# download file from internet
 		with urllib.request.urlopen(r) as remote:
 			pkg = pathlib.Path(urllib.parse.urlsplit(remote.geturl()).path.split('/')[-1])
 			print('Downloading SourceMod package', pkg)
 			with tempfile.NamedTemporaryFile(delete = False, suffix = ''.join(pkg.suffixes)) as local:
 				shutil.copyfileobj(remote, local)
 				tempname = local.name
-	else:
-		with tempfile.NamedTemporaryFile(delete = False, suffix = ''.join(args.archive.suffixes)) as local,\
-				open(args.archive, mode = 'rb') as remote:
-			shutil.copyfileobj(remote, local)
-			tempname = local.name
 	
-	# we have to reopen our tempfile because of exclusive file access on Windows
-	with deferred_file_remove(tempname, 'rb') as local, tempfile.TemporaryDirectory() as package:
-		shutil.unpack_archive(local.name, package)
+	with contextlib.ExitStack() as es:
+		if tempname:
+			archive_file = es.enter_context(deferred_file_remove(tempname, 'rb'))
+			package = es.enter_context(tempfile.TemporaryDirectory())
+			shutil.unpack_archive(archive_file.name, package)
+		
+		if not package:
+			print("No archive file specified")
+			sys.exit(1)
 		
 		path_sm = pathlib.Path('addons', 'sourcemod')
 		
