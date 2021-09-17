@@ -205,12 +205,12 @@ if __name__ == "__main__":
 			if (package / sd).exists():
 				shutil.copytree(package / sd, args.directory / sd, dirs_exist_ok = True)
 		
-		# iterate over extracted plugins and copy existing ones to root, else copy to disabled
+		# map installed plugin filenames to paths; copy unknown files to disabled
+		target_plugin_dir = args.directory / path_sm / 'plugins'
+		installed_plugins = { f.name: f.parent for f in target_plugin_dir.rglob("*.smx") }
 		for plugin in (package / path_sm / 'plugins').rglob("*.smx"):
-			if not (args.directory / path_sm / 'plugins' / plugin.name).exists():
-				shutil.copyfile(plugin, args.directory / path_sm / 'plugins' / 'disabled' / plugin.name)
-				print(plugin.name, 'disabled')
-			else:
-				shutil.copyfile(plugin, args.directory / path_sm / 'plugins' / plugin.name)
-				print(plugin.name, 'installed')
+			target = installed_plugins.get(plugin.name, target_plugin_dir / 'disabled')
+			shutil.copyfile(plugin, target / plugin.name)
+			
+			print(plugin.name, 'copied to', target.relative_to(args.directory / path_sm))
 		print("Upgrade complete.")
