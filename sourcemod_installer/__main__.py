@@ -117,6 +117,9 @@ if __name__ == "__main__":
 			"either compressed file or directory "
 			"(ignores version / os / branch / url)", type = pathlib.Path)
 	
+	parser.add_argument("--no-upgrade-plugins", help = "plugins will not be copied from "
+			"upgrade package (ignored if first time installing)", action = "store_true")
+	
 	args = parser.parse_args()
 	
 	params = {
@@ -205,12 +208,15 @@ if __name__ == "__main__":
 			if (package / sd).exists():
 				shutil.copytree(package / sd, args.directory / sd, dirs_exist_ok = True)
 		
-		# map installed plugin filenames to paths; copy unknown files to disabled
-		target_plugin_dir = args.directory / path_sm / 'plugins'
-		installed_plugins = { f.name: f.parent for f in target_plugin_dir.rglob("*.smx") }
-		for plugin in (package / path_sm / 'plugins').rglob("*.smx"):
-			target = installed_plugins.get(plugin.name, target_plugin_dir / 'disabled')
-			shutil.copyfile(plugin, target / plugin.name)
-			
-			print(plugin.name, 'copied to', target.relative_to(args.directory / path_sm))
+		if args.no_upgrade_plugins:
+			print("Skipping install of plugins.")
+		else:
+			# map installed plugin filenames to paths; copy unknown files to disabled
+			target_plugin_dir = args.directory / path_sm / 'plugins'
+			installed_plugins = { f.name: f.parent for f in target_plugin_dir.rglob("*.smx") }
+			for plugin in (package / path_sm / 'plugins').rglob("*.smx"):
+				target = installed_plugins.get(plugin.name, target_plugin_dir / 'disabled')
+				shutil.copyfile(plugin, target / plugin.name)
+				
+				print(plugin.name, 'copied to', target.relative_to(args.directory / path_sm))
 		print("Upgrade complete.")
