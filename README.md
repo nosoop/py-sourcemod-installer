@@ -15,7 +15,7 @@ to a Java JAR) from the Releases section, or by installing the package via `pip`
 
     # via pip
     python -m pip install --user git+https://github.com/nosoop/py-sourcemod-installer.git
-    sourcemod-installer /path/to/gamedir
+    sourcemod_installer /path/to/gamedir
     
     # via zipapp
     python3 /path/to/sourcemod_installer.pyz /path/to/gamedir
