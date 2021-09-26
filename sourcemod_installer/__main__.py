@@ -92,7 +92,7 @@ def confirm(*args, **kwargs):
 			pass
 	return None
 
-if __name__ == "__main__":
+def main():
 	import platform
 	import argparse
 	import pydoc
@@ -220,3 +220,6 @@ if __name__ == "__main__":
 				
 				print(plugin.name, 'copied to', target.relative_to(args.directory / path_sm))
 		print("Upgrade complete.")
+
+if __name__ == "__main__":
+	main()

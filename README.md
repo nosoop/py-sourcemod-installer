@@ -10,24 +10,20 @@ A Python 3.8+ script to install and upgrade SourceMod.  This script is able to:
 
 ## Instructions
 
-1. Download the `sourcemod_installer.pyz` zipapp file from the Releases section.
-(This is just the module packaged in a ZIP archive.  Just like Java and their JARs.)
-2. Run the zipapp:
+Install the script either by downloading a zipapp (the module packaged as a ZIP file, similar
+to a Java JAR) from the Releases section, or by installing the package via `pip`.
 
-    python3 sourcemod_installer.pyz /path/to/gamedir
+    # via pip
+    python -m pip install --user git+https://github.com/nosoop/py-sourcemod-installer.git
+    sourcemod-installer /path/to/gamedir
+    
+    # via zipapp
+    python3 /path/to/sourcemod_installer.pyz /path/to/gamedir
 
 (The path is the directory that will contain the `addons/` subdirectory.)
 You will need to agree to SourceMod's license on first install.
 
-There's a number of other configuration options visible via `--help`.
-
-## Building
-
-Requires Python.
-
-```
-python -m zipapp sourcemod_installer -p "/usr/bin/env python3" -o build/sourcemod_installer.pyz -c
-```
+There's a number of other configuration options available via `--help`.
 
 ## License
 
